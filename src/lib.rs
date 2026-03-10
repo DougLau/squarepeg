@@ -1,6 +1,7 @@
-// lib.rs      squarepeg crate.
+// lib.rs
 //
 // Copyright (c) 2026  Douglas Lau
+#![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
 
 mod geo;

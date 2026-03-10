@@ -6,12 +6,13 @@ use crate::geo::WebMercatorPos;
 use crate::peg::Peg;
 use pointy::{BBox, Pt, Transform};
 
-/// A map grid is used to address [Peg]s on a map.
+/// A grid used to address [Peg]s on a map.
 ///
-/// The grid should be in projected coördinates.  Use `default()` for
-/// [Web Mercator].
+/// The grid has an associated [spatial reference ID], which should use
+/// projected coordinates.  Use `default()` for [Web Mercator].
 ///
 /// [Peg]: struct.Peg.html
+/// [Spatial reference ID]: https://en.wikipedia.org/wiki/Spatial_reference_system
 /// [Web Mercator]: https://en.wikipedia.org/wiki/Web_Mercator_projection
 #[derive(Clone, Debug)]
 pub struct MapGrid {

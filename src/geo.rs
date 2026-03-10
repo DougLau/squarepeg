@@ -4,7 +4,9 @@
 //
 use pointy::{BBox, Pt};
 
-/// WGS-84 (EPSG:4326) position.
+/// [WGS-84] (EPSG:4326) position.
+///
+/// [WGS-84]: https://en.wikipedia.org/wiki/World_Geodetic_System
 #[derive(Clone, Copy, Debug)]
 pub struct Wgs84Pos {
     /// Latitude (radians)
@@ -13,7 +15,9 @@ pub struct Wgs84Pos {
     pub lon: f64,
 }
 
-/// Web mercator (EPSG:3857) position.
+/// [Web mercator] (EPSG:3857) position.
+///
+/// [Web mercator]: https://en.wikipedia.org/wiki/Web_Mercator_projection
 #[derive(Clone, Copy, Debug)]
 pub struct WebMercatorPos {
     /// X coordinate (meters)
