@@ -1,6 +1,6 @@
 [package]
 name = "squarepeg"
-version = "0.1.0"
+version = "0.2.0"
 description = "A library for partitioning the Earth's geography"
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/squarepeg"
@@ -11,4 +11,4 @@ categories = ["encoding"]
 edition = "2024"
 
 [dependencies]
-pointy = "0.7"
+pointy = "0.8"
