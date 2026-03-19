@@ -79,6 +79,27 @@ impl MapGrid {
             .scale(sx, -sy)
             .translate(-pegx, -pegy)
     }
+
+    /// Get Peg for a position (x, y, zoom)
+    pub fn xyz_peg(&self, x: f64, y: f64, zoom: u32) -> Option<Peg> {
+        let peg = Peg::new(0, 0, zoom)?;
+        if x < self.bbox.x_min() || x > self.bbox.x_max() {
+            return None;
+        }
+        if y < self.bbox.y_min() || y > self.bbox.y_max() {
+            return None;
+        }
+        let pz = f64::from(1 << peg.z());
+        let tx = -self.bbox.x_min();
+        let ty = -self.bbox.y_min();
+        let sx = pz / self.bbox.x_span();
+        let sy = pz / self.bbox.y_span();
+        let t = Transform::with_translate(tx, ty).scale(sx, sy);
+        let pt = Pt::new(x, -y) * t;
+        let x = pt.x.floor() as u32;
+        let y = pt.y.floor() as u32;
+        Peg::new(x, y, zoom)
+    }
 }
 
 /// Calculate scales at one zoom level
@@ -89,6 +110,7 @@ fn zoom_scale(zoom: u32) -> f64 {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::geo::*;
 
     #[test]
     fn test_peg_bbox() {
@@ -162,5 +184,53 @@ mod test {
             Pt::new(1.0, 0.9999999999999716),
             t * Pt::new(-10370975.997732716, 5596413.462927466)
         );
+    }
+
+    #[test]
+    fn test_invalid_peg() {
+        let g = MapGrid::default();
+        let mut pos: WebMercatorPos = Wgs84Pos::new(-180.0, 0.0).into();
+        assert!(g.xyz_peg(pos.x - 1.0, pos.y, 0).is_none());
+        pos = Wgs84Pos::new(180.0, 0.0).into();
+        assert!(g.xyz_peg(pos.x + 1.0, pos.y, 0).is_none());
+        pos = Wgs84Pos::new(0.0, -86.0).into();
+        assert!(g.xyz_peg(pos.x, pos.y - 1.0, 0).is_none());
+        pos = Wgs84Pos::new(0.0, 86.0).into();
+        assert!(g.xyz_peg(pos.x, pos.y + 1.0, 0).is_none());
+    }
+
+    fn check_pos(pos: WebMercatorPos, peg: Peg) {
+        let g = MapGrid::default();
+        assert_eq!(peg, g.xyz_peg(pos.x, pos.y, peg.z()).unwrap());
+    }
+
+    #[test]
+    fn test_find_peg() {
+        let pos = Wgs84Pos::new(0.0, 0.0).into();
+        check_pos(pos, Peg::new(0, 0, 0).unwrap());
+        // Northwest corner (zoom 0)
+        let pos = Wgs84Pos::new(-180.0, 85.051).into();
+        check_pos(pos, Peg::new(0, 0, 0).unwrap());
+        // Southeast corner (zoom 0)
+        let pos = Wgs84Pos::new(180.0, -85.051).into();
+        check_pos(pos, Peg::new(0, 0, 0).unwrap());
+        // Northwest corner (zoom 1)
+        let pos = Wgs84Pos::new(-180.0, 85.051).into();
+        check_pos(pos, Peg::new(0, 0, 1).unwrap());
+        // Near Center (zoom 1)
+        let pos = Wgs84Pos::new(-0.0000001, 0.0000001).into();
+        check_pos(pos, Peg::new(0, 0, 1).unwrap());
+        // Center (zoom 1)
+        let pos = Wgs84Pos::new(0.0, 0.0).into();
+        check_pos(pos, Peg::new(1, 1, 1).unwrap());
+        // Northeast corner (zoom 1)
+        let pos = Wgs84Pos::new(180.0, 85.051).into();
+        check_pos(pos, Peg::new(1, 0, 1).unwrap());
+        // Southeast corner (zoom 1)
+        let pos = Wgs84Pos::new(180.0, -85.051).into();
+        check_pos(pos, Peg::new(1, 1, 1).unwrap());
+        // Somewhere in Minnesota (zoom 10)
+        let pos = Wgs84Pos::new(-93.5, 45.0).into();
+        check_pos(pos, Peg::new(246, 368, 10).unwrap());
     }
 }
