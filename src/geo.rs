@@ -9,10 +9,10 @@ use pointy::{BBox, Pt};
 /// [WGS-84]: https://en.wikipedia.org/wiki/World_Geodetic_System
 #[derive(Clone, Copy, Debug)]
 pub struct Wgs84Pos {
-    /// Latitude (radians)
-    pub lat: f64,
     /// Longitude (radians)
     pub lon: f64,
+    /// Latitude (radians)
+    pub lat: f64,
 }
 
 /// [Web mercator] (EPSG:3857) position.
@@ -39,17 +39,12 @@ impl Wgs84Pos {
     }
 
     /// Create a new WGS-84 position
-    pub fn new(lat_deg: f64, lon_deg: f64) -> Self {
-        let lat_deg = lat_deg.clamp(-90.0, 90.0);
+    pub fn new(lon_deg: f64, lat_deg: f64) -> Self {
         let lon_deg = lon_deg.clamp(-180.0, 180.0);
-        let lat = lat_deg.to_radians();
+        let lat_deg = lat_deg.clamp(-90.0, 90.0);
         let lon = lon_deg.to_radians();
-        Wgs84Pos { lat, lon }
-    }
-
-    /// Get the latitude in degrees
-    pub fn lat_deg(&self) -> f64 {
-        self.lat.to_degrees()
+        let lat = lat_deg.to_radians();
+        Wgs84Pos { lon, lat }
     }
 
     /// Get the longitude in degrees
@@ -57,10 +52,15 @@ impl Wgs84Pos {
         self.lon.to_degrees()
     }
 
+    /// Get the latitude in degrees
+    pub fn lat_deg(&self) -> f64 {
+        self.lat.to_degrees()
+    }
+
     /// Calculate the distance to another position (meters).
     pub fn distance_haversine(&self, other: &Self) -> f64 {
-        let dlat = other.lat - self.lat;
         let dlon = other.lon - self.lon;
+        let dlat = other.lat - self.lat;
         let sdlat2 = (dlat / 2.0).sin();
         let coslat = self.lat.cos() * other.lat.cos();
         let sdlon2 = (dlon / 2.0).sin();
@@ -111,7 +111,7 @@ impl From<WebMercatorPos> for Wgs84Pos {
         let lon = (pos.x / radius).to_degrees();
         debug_assert!(lat >= -WebMercatorPos::MAX_LATITUDE);
         debug_assert!(lat <= WebMercatorPos::MAX_LATITUDE);
-        Wgs84Pos::new(lat, lon)
+        Wgs84Pos::new(lon, lat)
     }
 }
 
@@ -140,35 +140,35 @@ mod test {
     #[test]
     fn positions() {
         // Minnesota
-        check_pos(45.0, -93.0, -10352712.643774442, 5621521.486192066);
+        check_pos(-93.0, 45.0, -10352712.643774442, 5621521.486192066);
         // Minnesota
-        check_pos(45.0, -94.0, -10464032.134567715, 5621521.486192066);
+        check_pos(-94.0, 45.0, -10464032.134567715, 5621521.486192066);
         // California
-        check_pos(39.0, -122.0, -13580977.876779376, 4721671.572580107);
+        check_pos(-122.0, 39.0, -13580977.876779376, 4721671.572580107);
         // New Zealand
-        check_pos(-45.0, 173.0, 19258271.907236326, -5621521.486192067);
+        check_pos(173.0, -45.0, 19258271.907236326, -5621521.486192067);
     }
 
-    fn check_pos(lat: f64, lon: f64, x: f64, y: f64) {
-        let pos: WebMercatorPos = Wgs84Pos::new(lat, lon).into();
+    fn check_pos(lon: f64, lat: f64, x: f64, y: f64) {
+        let pos: WebMercatorPos = Wgs84Pos::new(lon, lat).into();
         assert!(near(pos.x, x));
         assert!(near(pos.y, y));
         let pos: Wgs84Pos = pos.into();
-        assert!(near(pos.lat_deg(), lat));
         assert!(near(pos.lon_deg(), lon));
+        assert!(near(pos.lat_deg(), lat));
     }
 
     #[test]
     fn distance() {
-        let p = Wgs84Pos::new(45.0, -93.0);
-        check_dist(&p, 45.0, -93.1, 7_862.678_992_510_984);
-        check_dist(&p, 44.9, -93.1, 13_622.518_673_490_680);
-        check_dist(&p, 44.9, -93.0, 11_119.507_973_463_069);
-        check_dist(&p, 45.1, -93.0, 11_119.507_973_463_777);
+        let p = Wgs84Pos::new(-93.0, 45.0);
+        check_dist(&p, -93.1, 45.0, 7_862.678_992_510_984);
+        check_dist(&p, -93.1, 44.9, 13_622.518_673_490_680);
+        check_dist(&p, -93.0, 44.9, 11_119.507_973_463_069);
+        check_dist(&p, -93.0, 45.1, 11_119.507_973_463_777);
     }
 
-    fn check_dist(p: &Wgs84Pos, lat: f64, lon: f64, dist: f64) {
-        let po = Wgs84Pos::new(lat, lon);
+    fn check_dist(p: &Wgs84Pos, lon: f64, lat: f64, dist: f64) {
+        let po = Wgs84Pos::new(lon, lat);
         let dh = p.distance_haversine(&po);
         assert!(near(dist, dh));
     }
