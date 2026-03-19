@@ -81,8 +81,8 @@ impl MapGrid {
     }
 
     /// Get Peg for a position (x, y, zoom)
-    pub fn xyz_peg(&self, x: f64, y: f64, zoom: u32) -> Option<Peg> {
-        let peg = Peg::new(0, 0, zoom)?;
+    pub fn zxy_peg(&self, zoom: u32, x: f64, y: f64) -> Option<Peg> {
+        let peg = Peg::new(zoom, 0, 0)?;
         if x < self.bbox.x_min() || x > self.bbox.x_max() {
             return None;
         }
@@ -98,7 +98,7 @@ impl MapGrid {
         let pt = Pt::new(x, -y) * t;
         let x = pt.x.floor() as u32;
         let y = pt.y.floor() as u32;
-        Peg::new(x, y, zoom)
+        Peg::new(zoom, x, y)
     }
 }
 
@@ -122,7 +122,7 @@ mod test {
         assert_eq!(b.y_min(), -20037508.3427892480);
         assert_eq!(b.y_max(), 20037508.3427892480);
 
-        let peg = Peg::new(0, 0, 1).unwrap();
+        let peg = Peg::new(1, 0, 0).unwrap();
         let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), -20037508.3427892480);
         assert_eq!(b.x_max(), 0.0);
@@ -136,7 +136,7 @@ mod test {
         assert_eq!(b.y_min(), -20037508.3427892480);
         assert_eq!(b.y_max(), 0.0);
 
-        let peg = Peg::new(246, 368, 10).unwrap();
+        let peg = Peg::new(10, 246, 368).unwrap();
         let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), -10410111.756214727);
         assert_eq!(b.x_max(), -10370975.997732716);
@@ -158,7 +158,7 @@ mod test {
             t * Pt::new(20037508.3427892480, -20037508.3427892480)
         );
 
-        let peg = Peg::new(0, 0, 1).unwrap();
+        let peg = Peg::new(1, 0, 0).unwrap();
         let t = g.peg_transform(peg);
         assert_eq!(
             Pt::new(0.0, 0.0),
@@ -174,7 +174,7 @@ mod test {
             t * Pt::new(20037508.3427892480, -20037508.3427892480)
         );
 
-        let peg = Peg::new(246, 368, 10).unwrap();
+        let peg = Peg::new(10, 246, 368).unwrap();
         let t = g.peg_transform(peg);
         assert_eq!(
             Pt::new(0.0, 0.0),
@@ -190,18 +190,18 @@ mod test {
     fn test_invalid_peg() {
         let g = MapGrid::default();
         let mut pos: WebMercatorPos = Wgs84Pos::new(-180.0, 0.0).into();
-        assert!(g.xyz_peg(pos.x - 1.0, pos.y, 0).is_none());
+        assert!(g.zxy_peg(0, pos.x - 1.0, pos.y).is_none());
         pos = Wgs84Pos::new(180.0, 0.0).into();
-        assert!(g.xyz_peg(pos.x + 1.0, pos.y, 0).is_none());
+        assert!(g.zxy_peg(0, pos.x + 1.0, pos.y).is_none());
         pos = Wgs84Pos::new(0.0, -86.0).into();
-        assert!(g.xyz_peg(pos.x, pos.y - 1.0, 0).is_none());
+        assert!(g.zxy_peg(0, pos.x, pos.y - 1.0).is_none());
         pos = Wgs84Pos::new(0.0, 86.0).into();
-        assert!(g.xyz_peg(pos.x, pos.y + 1.0, 0).is_none());
+        assert!(g.zxy_peg(0, pos.x, pos.y + 1.0).is_none());
     }
 
     fn check_pos(pos: WebMercatorPos, peg: Peg) {
         let g = MapGrid::default();
-        assert_eq!(peg, g.xyz_peg(pos.x, pos.y, peg.z()).unwrap());
+        assert_eq!(peg, g.zxy_peg(peg.z(), pos.x, pos.y).unwrap());
     }
 
     #[test]
@@ -216,21 +216,21 @@ mod test {
         check_pos(pos, Peg::new(0, 0, 0).unwrap());
         // Northwest corner (zoom 1)
         let pos = Wgs84Pos::new(-180.0, 85.051).into();
-        check_pos(pos, Peg::new(0, 0, 1).unwrap());
+        check_pos(pos, Peg::new(1, 0, 0).unwrap());
         // Near Center (zoom 1)
         let pos = Wgs84Pos::new(-0.0000001, 0.0000001).into();
-        check_pos(pos, Peg::new(0, 0, 1).unwrap());
+        check_pos(pos, Peg::new(1, 0, 0).unwrap());
         // Center (zoom 1)
         let pos = Wgs84Pos::new(0.0, 0.0).into();
         check_pos(pos, Peg::new(1, 1, 1).unwrap());
         // Northeast corner (zoom 1)
         let pos = Wgs84Pos::new(180.0, 85.051).into();
-        check_pos(pos, Peg::new(1, 0, 1).unwrap());
+        check_pos(pos, Peg::new(1, 1, 0).unwrap());
         // Southeast corner (zoom 1)
         let pos = Wgs84Pos::new(180.0, -85.051).into();
         check_pos(pos, Peg::new(1, 1, 1).unwrap());
         // Somewhere in Minnesota (zoom 10)
         let pos = Wgs84Pos::new(-93.5, 45.0).into();
-        check_pos(pos, Peg::new(246, 368, 10).unwrap());
+        check_pos(pos, Peg::new(10, 246, 368).unwrap());
     }
 }
