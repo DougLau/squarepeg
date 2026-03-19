@@ -9,7 +9,7 @@ use std::fmt;
 /// It uses XYZ addressing, with X increasing from west to east and Y increasing
 /// from north to south.  The X and Y values can range from 0 to
 /// 2<sup>Z</sup>-1.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Peg {
     x: u32, // not public to prevent invalid values being created
     y: u32,

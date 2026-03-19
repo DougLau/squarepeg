@@ -52,7 +52,7 @@ impl MapGrid {
     }
 
     /// Get the bounding box of a Peg
-    pub fn bbox_peg(&self, peg: Peg) -> BBox<f64> {
+    pub fn peg_bbox(&self, peg: Peg) -> BBox<f64> {
         let px = self.bbox.x_min(); // west edge
         let py = self.bbox.y_max(); // north edge
         let pz = zoom_scale(peg.z());
@@ -67,7 +67,7 @@ impl MapGrid {
     }
 
     /// Get the transform to coördinates in 0 to 1 range
-    pub fn transform_peg(&self, peg: Peg) -> Transform<f64> {
+    pub fn peg_transform(&self, peg: Peg) -> Transform<f64> {
         let px = self.bbox.x_min(); // west edge
         let py = self.bbox.y_max(); // north edge
         let pz = f64::from(1 << peg.z());
@@ -94,28 +94,28 @@ mod test {
     fn test_peg_bbox() {
         let g = MapGrid::default();
         let peg = Peg::new(0, 0, 0).unwrap();
-        let b = g.bbox_peg(peg);
+        let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), -20037508.3427892480);
         assert_eq!(b.x_max(), 20037508.3427892480);
         assert_eq!(b.y_min(), -20037508.3427892480);
         assert_eq!(b.y_max(), 20037508.3427892480);
 
         let peg = Peg::new(0, 0, 1).unwrap();
-        let b = g.bbox_peg(peg);
+        let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), -20037508.3427892480);
         assert_eq!(b.x_max(), 0.0);
         assert_eq!(b.y_min(), 0.0);
         assert_eq!(b.y_max(), 20037508.3427892480);
 
         let peg = Peg::new(1, 1, 1).unwrap();
-        let b = g.bbox_peg(peg);
+        let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), 0.0);
         assert_eq!(b.x_max(), 20037508.3427892480);
         assert_eq!(b.y_min(), -20037508.3427892480);
         assert_eq!(b.y_max(), 0.0);
 
         let peg = Peg::new(246, 368, 10).unwrap();
-        let b = g.bbox_peg(peg);
+        let b = g.peg_bbox(peg);
         assert_eq!(b.x_min(), -10410111.756214727);
         assert_eq!(b.x_max(), -10370975.997732716);
         assert_eq!(b.y_min(), 5596413.462927466);
@@ -126,7 +126,7 @@ mod test {
     fn test_peg_transform() {
         let g = MapGrid::default();
         let peg = Peg::new(0, 0, 0).unwrap();
-        let t = g.transform_peg(peg);
+        let t = g.peg_transform(peg);
         assert_eq!(
             Pt::new(0.0, 0.0),
             t * Pt::new(-20037508.3427892480, 20037508.3427892480)
@@ -137,7 +137,7 @@ mod test {
         );
 
         let peg = Peg::new(0, 0, 1).unwrap();
-        let t = g.transform_peg(peg);
+        let t = g.peg_transform(peg);
         assert_eq!(
             Pt::new(0.0, 0.0),
             t * Pt::new(-20037508.3427892480, 20037508.3427892480)
@@ -145,7 +145,7 @@ mod test {
         assert_eq!(Pt::new(1.0, 1.0), t * Pt::new(0.0, 0.0));
 
         let peg = Peg::new(1, 1, 1).unwrap();
-        let t = g.transform_peg(peg);
+        let t = g.peg_transform(peg);
         assert_eq!(Pt::new(0.0, 0.0), t * Pt::new(0.0, 0.0));
         assert_eq!(
             Pt::new(1.0, 1.0),
@@ -153,7 +153,7 @@ mod test {
         );
 
         let peg = Peg::new(246, 368, 10).unwrap();
-        let t = g.transform_peg(peg);
+        let t = g.peg_transform(peg);
         assert_eq!(
             Pt::new(0.0, 0.0),
             t * Pt::new(-10410111.756214727, 5635549.221409475)
