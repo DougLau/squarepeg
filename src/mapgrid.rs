@@ -46,7 +46,7 @@ impl MapGrid {
         self.srid
     }
 
-    /// Get the bounding box of the grid
+    /// Get the bounding box of the map grid
     pub fn bbox(&self) -> BBox<f64> {
         self.bbox
     }
@@ -66,7 +66,7 @@ impl MapGrid {
         BBox::from((p0, p1))
     }
 
-    /// Get the transform to coördinates in 0 to 1 range
+    /// Get transform to Peg coördinates (range 0 to 1)
     pub fn peg_transform(&self, peg: Peg) -> Transform<f64> {
         let px = self.bbox.x_min(); // west edge
         let py = self.bbox.y_max(); // north edge
@@ -80,7 +80,7 @@ impl MapGrid {
             .translate(-pegx, -pegy)
     }
 
-    /// Get Peg for a position (x, y, zoom)
+    /// Get Peg for a position (zoom, x, y)
     pub fn zxy_peg(&self, zoom: u32, x: f64, y: f64) -> Option<Peg> {
         let peg = Peg::new(zoom, 0, 0)?;
         if x < self.bbox.x_min() || x > self.bbox.x_max() {
