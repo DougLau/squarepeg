@@ -6,7 +6,7 @@ use crate::geo::WebMercatorPos;
 use crate::peg::Peg;
 use pointy::{BBox, Pt, Transform};
 
-/// A grid used to address [Peg]s on a map.
+/// A grid used to address [Peg]s on a map
 ///
 /// The grid has an associated [spatial reference ID], which should use
 /// projected coordinates.  Use `default()` for [Web Mercator].
@@ -33,25 +33,25 @@ impl Default for MapGrid {
 }
 
 impl MapGrid {
-    /// Create a new map grid.
+    /// Create a new map grid
     ///
-    /// * `srid` Spatial reference ID.
-    /// * `bbox` Bounding box.
+    /// * `srid` Spatial reference ID
+    /// * `bbox` Bounding box
     pub fn new(srid: i32, bbox: BBox<f64>) -> Self {
         MapGrid { srid, bbox }
     }
 
-    /// Get the spatial reference ID.
+    /// Get the spatial reference ID
     pub fn srid(&self) -> i32 {
         self.srid
     }
 
-    /// Get the bounding box of the grid.
+    /// Get the bounding box of the grid
     pub fn bbox(&self) -> BBox<f64> {
         self.bbox
     }
 
-    /// Get the bounding box of a Peg.
+    /// Get the bounding box of a Peg
     pub fn bbox_peg(&self, peg: Peg) -> BBox<f64> {
         let px = self.bbox.x_min(); // west edge
         let py = self.bbox.y_max(); // north edge
@@ -66,7 +66,7 @@ impl MapGrid {
         BBox::from((p0, p1))
     }
 
-    /// Get the transform to coördinates in 0 to 1 range.
+    /// Get the transform to coördinates in 0 to 1 range
     pub fn transform_peg(&self, peg: Peg) -> Transform<f64> {
         let px = self.bbox.x_min(); // west edge
         let py = self.bbox.y_max(); // north edge
@@ -81,7 +81,7 @@ impl MapGrid {
     }
 }
 
-/// Calculate scales at one zoom level.
+/// Calculate scales at one zoom level
 fn zoom_scale(zoom: u32) -> f64 {
     1.0 / f64::from(1 << zoom)
 }
