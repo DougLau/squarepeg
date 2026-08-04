@@ -11,4 +11,4 @@ categories = ["encoding"]
 edition = "2024"
 
 [dependencies]
-pointy = "0.8"
+pointy = "0.9"
