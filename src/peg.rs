@@ -13,7 +13,7 @@ use std::fmt;
 ///
 /// Each successive zoom level has twice as many tiles in each dimension (the
 /// **X** and **Y** values can range from 0 to 2<sup>Z</sup>-1).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct Peg {
     z: u32, // not public to prevent invalid values being created
     x: u32,
